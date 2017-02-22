@@ -1,9 +1,8 @@
 /* globals NodeMCU I2C1 OneWire setWatch pinMode */
 import configFactory from './config';
 
-
 function main() {
-  const { ssid, password, losantDeviceAuth, losandDeviceId} = configFactory();
+  const { ssid, password } = configFactory();
   const wifi = require('Wifi');
   const options = {
     repeat: true,
@@ -20,6 +19,7 @@ function main() {
   I2C1.setup({scl, sda});
   const lcd = require('HD44780').connectI2C(I2C1, 0x3f);
   const sensor = require('DS18B20').connect(ow);
+  const http = require('http')
   let fahrenheit = true;
 
 
@@ -28,6 +28,7 @@ function main() {
       callback(temp);
     });
   }
+
   lcd.print('Temp: ');
   wifi.connect(ssid, {password}, err => {
     if (err) console.log('Problem: ', err);
@@ -37,10 +38,7 @@ function main() {
   setInterval(() => {
     lcd.setCursor(6, 0);
     reportTemp(temp => {
-      // losant.updateDeviceData({Temperature: temp}, (err, res) => {
-      //   if (err) return console.log(err);
-      //   console.log('losant response: ',res);
-      // });
+
       let dispTemp = 0;
       if (fahrenheit) {  //convert to Fahrenheit
         dispTemp = (temp*(9/5)+32).toFixed(1);
